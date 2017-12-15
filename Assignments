@@ -1,0 +1,197 @@
+Task 1:
+=======
+- Goal: we want price of commodity to be deducted from new owner and to be added to old owner
+
+What is specifically added to current sample:
+==============================================
+1. CTO file
+	Inside Trader participant, add below variable
+		o Double accountBalance
+	Inside trade transaction, add below variable
+		--> Trader oldOwner
+	Inside Commodity asset,  add below variable
+		o Double totalPrice
+		
+2. logic.js file
+	Inside tradeCommodity function
+		trade.newOwner.accountBalance -= trade.commodity.totalPrice;
+		trade.oldOwner.accountBalance += trade.commodity.totalPrice
+	  
+	At end of the function, add those below lines (they are used to update the the registry of 2 traders in database because their account balance is changed)
+		 .then(function()
+			{
+		   return getParticipantRegistry('org.acme.trading.Trader');   
+			})
+		  .then(function(participantRegistry)
+			{
+				return participantRegistry.update(trade.newOwner);
+			})
+		  .then(function()
+			{
+		   return getParticipantRegistry('org.acme.trading.Trader');   
+			})
+		  .then(function(participantRegistry)
+			{
+				return participantRegistry.update(trade.oldOwner);
+			});
+	  
+=======================================================================
+Task 2:
+=======
+Goal: permission rule; create new participant called "Regulator" has the right only to do the trade transaction
+
+What is specifically added to current sample:
+==============================================
+1. CTO file
+	participant Regulator identified by email
+	{
+		o String email
+	}
+
+2. permissions file:
+note: below code to be put first thing in the file (order is important)
+
+	rule RegulatorOnlyDoesTrade
+	{
+		description: "regulator only does trade transaction"
+		participant: "org.acme.trading.Regulator"
+		operation: ALL
+		resource: "org.acme.trading.Trade"
+		action: ALLOW 
+	}
+
+	rule NoOneDoesTrade
+	{
+		description: "No one has right to do trade transaction"
+		participant: "ANY"
+		operation: ALL
+		resource: "org.acme.trading.Trade"
+		action: DENY 
+	}
+
+=======================================================================
+task 3: 
+========
+Goal: create abstract participant and make all other participants extend this one & use enum .. plus add regulator participant
+
+What is specifically added to current sample:
+==============================================
+1. Inside cto file, add the following
+abstract participant user
+{
+    o String firstName
+    o String lastName
+    o String address
+} 
+
+participant Trader identified by tradeId extends user 
+{
+    o String tradeId
+}
+participant Regulator identified by email extends user 
+{
+	o String email
+}
+
+enum TradeStatus
+{
+ 	o CREATED
+    o VALIDATED
+	o COMPLETED
+}
+
+Add the below line in commodity asset
+o TradeStatus status
+
+=======================================================================
+task 4:
+=======
+Goal: create participant validator and create new transaction that changes status of commodity from created to validated
+
+What is specifically added to current sample:
+==============================================
+1. What is added to 
+participant Validator identified by email extends user
+{
+  o String email
+}
+
+transaction ValidateTrade
+{
+ 	--> Commodity commodity 
+}
+
+/**
+  * description
+  * @param {org.acme.trading.ValidateTrade} trade 
+  * @transaction
+  */
+function ValidateTrade (trade)
+{
+ 	trade.commodity.status = "VALIDATED";
+  
+  return getAssetRegistry('org.acme.trading.Commodity')
+        .then(function (assetRegistry) {
+   return assetRegistry.update(trade.commodity);
+  });
+}
+
+=======================================================================
+task 5: 
+=======
+Goal: permission rule that prevents trade transaction if status of commodity is != validated
+
+What is specifically added to current sample:
+==============================================
+1. Add below to the .acl file
+
+rule RegulatorOnlyDoesTrade
+	{
+		description: "regulator only does trade transaction"
+		participant: "org.acme.trading.Regulator"
+		operation: ALL
+		resource(v): "org.acme.trading.Trade"
+		condition: (v.commodity.status == "VALIDATED")      
+		action: ALLOW
+	}
+
+	rule NoOneDoesTrade
+	{
+		description: "No one has right to do trade transaction"
+		participant: "ANY"
+		operation: ALL
+		resource: "org.acme.trading.Trade"
+		action: DENY 
+	}
+	
+=======================================================================
+task 6:
+=======
+Goal: explain existing transaction in the sample "removeHighQuantity" that uses query file
+
+=======================================================================
+task 7:
+========
+Goal: explain event that exists in the current sample
+=======================================================================
+task 8:
+========
+Goal: Concepts, Arrays, default, range
+
+What is specifically added to current sample:
+==============================================
+concept Address
+{
+  o String country default = "Egypt"
+  o String city optional
+}
+
+- add the below line in abstract participant user
+    o Address address optional
+
+- add below line in asset commodity
+	o Integer year range = [1990, ]
+
+- add below in asset commodity
+  	o Integer[] counts
+=======================================================================
