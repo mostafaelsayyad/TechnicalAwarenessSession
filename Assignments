@@ -72,7 +72,7 @@ note: below code to be put first thing in the file (order is important)
 =======================================================================
 task 3: 
 ========
-Goal: create abstract participant and make all other participants extend this one & use enum .. plus add regulator participant
+Goal: create abstract participant and make all other participants extend this one & use enum 
 
 What is specifically added to current sample:
 ==============================================
