@@ -1,0 +1,119 @@
+# The guide lines for this session are:
+	- Explore the capabilities of the "composer-rest-server".
+	- Enable publishing events from the REST server through websockets.
+	- Enable authentication for the REST server.
+	- Enable authorization for the REST server through a passport startegy. "Github"
+	- Enable user multi-mode for the REST server.
+	- Deploying the REST server as a persistent instance on Docker.
+	- Run Blockchain explorer to investigate the network performance.
+
+# Task 1:
+
+Preparing the environment 	
+	
+	NETWORK_NAME = "my-network"
+
+
+	composer runtime install --card PeerAdmin@hlfv1 --businessNetworkName $NETWORK_NAME
+	
+	## (TIP) Check the dockers that are being instantiated using: docker ps -a
+
+	composer network start -c PeerAdmin@hlfv1 -A admin -S adminpw -a $NETWORK_NAME.bna --file networkadmin.card
+
+	composer card import --file networkadmin.card
+
+	composer network ping --card admin@$NETWORK_NAME
+
+	composer-rest-server
+
+Now we encounter the rest server different options, and we come to discuss them.
+
+
+# Task 2:
+
+Checking and listening to events published by the REST server
+
+	composer-rest-server -c <admin@networkcard> -w true
+
+	npm install -g wscat
+
+	wscat -c ws://localhost:3000
+
+	## (TIP) Start a transaction that creates any events to be caught in the console.
+
+# Task 3:
+
+Enabling authentication for the REST server
+
+	npm install -g passport-github
+
+	
+	# Configure Github the developer settings to create a new application passport strategy.
+	# Visit the composer website official website for documentation of steps.
+	
+export COMPOSER_PROVIDERS='{
+"github": {
+"provider": "github",
+"module": "passport-github",
+"clientID": "REPLACE_WITH_CLIENT_ID",
+"clientSecret": "REPLACE_WITH_CLIENT_SECRET",
+"authPath": "/auth/github",
+"callbackURL": "/auth/github/callback",
+"successRedirect": "/",
+"failureRedirect": "/"
+}
+}'
+
+	composer-rest-server -c admin@my-network -a true -w true
+
+	#(TIP) Confirm by trying to invoke a dummy transaction without authentication.
+
+	#(TIP) Authenticate with the REST server, and try invoking a dummy transaction.
+
+	http://localhost:3000/auth/github
+
+	#(TIP) Token can be appended in the url 
+	
+	curl -v http://localhost:3000/api/system/ping?access_token=xxxxx
+
+	#(TIP) Token can be appended in the Header of the HTTP request
+	
+	curl -v -H 'X-Access-Token: xxxxx' http://localhost:3000/api/system/ping
+
+# Task 4:
+
+Enabling multi-user mode for the REST server.
+
+	# Issue a participant identity, and create a participant card in order to validate.
+
+	composer-rest-server -c <admin@networkcard> -m true -a true -w true
+
+	# Authenticate with the REST Server
+
+	http://localhost:3000/auth/github
+
+	# Check the Wallet
+
+	# Add an identity to the wallet that should be binded to a participant in the network.
+
+	# Check the Wallet back again.
+
+	# Perform a System PING to check the identity and the binding of the identity.
+
+# Task 5:
+
+Starting the REST server through TLS (HTTPS)
+
+	export COMPOSER_TLS=true
+	export COMPOSER_TLS_CERTIFICATE=/tmp/cert.pem
+	export COMPOSER_TLS_KEY=/tmp/key.pem
+	composer-rest-server -c <admin@networkcard>
+
+	# Navigate to the REST server and check for TLS cert through the web browser.
+
+
+###########################################
+
+Discuss the building of Docker image for REST server.
+
+
