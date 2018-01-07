@@ -1,0 +1,44 @@
+// deploy .bna using below commands 
+composer runtime install --card PeerAdmin@hlfv1 --businessNetworkName trade-network
+composer network start --card PeerAdmin@hlfv1 --networkAdmin admin --networkAdminEnrollSecret adminpw --archiveFile trade-network.bna --file networkadmin.card
+composer card import --file networkadmin.card
+composer network ping --card admin@trade-network
+
+//generate Rest Service using blow command 
+composer-rest-server -c admin@trade-network -n never -w true
+
+
+
+
+// creat card for regulator 
+composer identity issue -u  regulator -a resource:org.acme.trading.Regulator#regulator@ibm.com  -f regulator.card  -c admin@trade-network
+composer card import --file regulator.card
+
+//create trader and commodity using rest service 
+
+create Trader
+
+{
+  "$class": "org.acme.trading.Trader",
+  "tradeId": "9900",
+  "accountBalance": 8000,
+  "firstName": "Labib",
+  "lastName": "Farag",
+  "address": "Cairo"
+}
+
+
+
+
+
+
+{
+  "$class": "org.acme.trading.Commodity",
+  "tradingSymbol": "34390",
+  "description": "Sample Commodity",
+  "mainExchange": "sampl",
+  "quantity": 123,
+  "status": "CREATED",
+  "owner": "resource:org.acme.trading.Trader#9900",
+  "totalPrice": 3
+}
