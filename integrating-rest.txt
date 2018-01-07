@@ -63,6 +63,21 @@ export COMPOSER_PROVIDERS='{
 "failureRedirect": "/"
 }
 }'
+	# Another time for linkedIN or we can append both together and have the two variants
+
+
+export COMPOSER_PROVIDERS='{
+"linkedin": {
+"provider": "linkedin",
+"module": "passport-linked",
+"consumerKey": "REPLACE_WITH_CLIENT_ID",
+"consumerSecret": "REPLACE_WITH_CLIENT_SECRET",
+"authPath": "/auth/linkedin",
+"callbackURL": "/auth/linkedin/callback",
+"successRedirect": "/",
+"failureRedirect": "/"
+}
+}'
 
 	composer-rest-server -c admin@my-network -a true -w true
 
